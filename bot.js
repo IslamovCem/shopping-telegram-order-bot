@@ -1,46 +1,24 @@
-const TelegramBot = require("node-telegram-bot-api");
+const TelegramBot = require('node-telegram-bot-api');
 
-const token = "YOUR_TELEGRAM_BOT_TOKEN";
-const adminChatId = "1573771417"; // Adminning Telegram chat ID'si
-const adminUsername = "YOUR_ADMIN_USERNAME"; // Telegram username (link uchun)
+// .env fayldan tokenni olish
+require('dotenv').config();
+const token = process.env.BOT_TOKEN;
 
+// polling bilan botni ishga tushirish
 const bot = new TelegramBot(token, { polling: true });
 
+// /start komandasi
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
-  bot.sendMessage(chatId, "🛒 Mahsulot katalogiga xush kelibsiz!", {
+  const firstName = msg.from.first_name || 'foydalanuvchi';
+
+  bot.sendMessage(chatId, `🛍 Salom ${firstName}!
+
+Bu bot orqali siz dori, vitamin va parfyumeriya mahsulotlarini qulay tarzda ko‘rishingiz va buyurtma qilishingiz mumkin.`, {
     reply_markup: {
-      inline_keyboard: [[
-        { text: "📦 Mahsulot 1", callback_data: "product_1" }
-      ]]
+      inline_keyboard: [
+        [{ text: '🛒 Do‘konni ochish', web_app: { url: process.env.WEB_APP_URL } }]
+      ]
     }
   });
-});
-
-bot.on("callback_query", (query) => {
-  const chatId = query.message.chat.id;
-  const user = query.from;
-
-  if (query.data === "product_1") {
-    // Adminga yuboriladi
-    bot.sendPhoto(adminChatId, "https://example.com/product1.jpg", {
-      caption: `📥 Yangi buyurtma!
-
-👤 ${user.first_name} (${user.username || "no username"})
-🛍 Mahsulot: Vitamin A
-💸 Narxi: 99,000 so'm`
-    });
-
-    // Foydalanuvchiga tugma yuboriladi
-    bot.sendMessage(chatId, "✅ Buyurtma yuborildi. Admin bilan bog‘lanish uchun quyidagi tugmani bosing:", {
-      reply_markup: {
-        inline_keyboard: [[
-          {
-            text: "💬 Admin bilan bog‘lanish",
-            url: `https://t.me/${adminUsername}`
-          }
-        ]]
-      }
-    });
-  }
 });
